@@ -68,3 +68,5 @@ app.post('/api/payment/checkout', async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 السيرفر يعمل على بورت ${PORT} (CORS Fixed for Production)`));
+
+//test comment for git
