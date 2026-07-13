@@ -1,72 +1,50 @@
 require('dotenv').config();
-const dns = require('dns');
 const express = require('express');
 const cors = require('cors');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-// إجبار النظام على استخدام IPv4 لحل مشاكل الاتصال
-if (dns.setDefaultResultOrder) {
-  dns.setDefaultResultOrder('ipv4first');
-}
-
 const app = express();
 app.use(express.json());
 
-// التعديل هنا: تحديد الـ origin برابط موقعك الحقيقي على Vercel
-const allowedOrigin = "https://prime-market-nine.vercel.app";
-
+// تأكدي إن الإعدادات مكتوبة كده بالظبط عشان تسمح بالمرور
 app.use(cors({
-  origin: allowedOrigin, 
-  credentials: true, 
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+    origin: ["http://localhost:5173", "https://prime-market.vercel.app"], // ضيفي لينك الفرونت بتاعك على فيرسيل هنا كمان
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-// معالجة طلبات الـ pre-flight
-app.options('*', cors({
-  origin: allowedOrigin,
-  credentials: true
-}));
-
-// مسار الدفع باستخدام Stripe
+// مسار الدفع
 app.post('/api/payment/checkout', async (req, res) => {
   try {
     const { cartItems } = req.body;
     if (!cartItems || cartItems.length === 0) return res.status(400).json({ success: false, message: "السلة فارغة!" });
 
-    // تحويل المنتجات لتنسيق Stripe
     const lineItems = cartItems.map(item => ({
       price_data: {
         currency: 'usd', 
-        product_data: {
-          name: item.name,
-        },
+        product_data: { name: item.name },
         unit_amount: Math.round(item.price * 100),
       },
       quantity: item.quantity || 1,
     }));
 
-    // تحديد روابط النجاح والإلغاء (يتم الاعتماد على المتغير CLIENT_URL في Vercel)
-    const successUrl = `${process.env.CLIENT_URL || 'https://prime-market-nine.vercel.app'}/success`;
-    const cancelUrl = `${process.env.CLIENT_URL || 'https://prime-market-nine.vercel.app'}/cancel`;
-
-    // إنشاء جلسة دفع
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-      success_url: successUrl,
-      cancel_url: cancelUrl,
+      success_url: `${process.env.CLIENT_URL || 'https://prime-market-nine.vercel.app'}/success`,
+      cancel_url: `${process.env.CLIENT_URL || 'https://prime-market-nine.vercel.app'}/cancel`,
     });
 
     res.status(200).json({ success: true, url: session.url });
-
   } catch (error) {
-    console.error("Stripe Error:", error.message);
+    console.error("Stripe Error:", error);
     res.status(500).json({ success: false, error: "فشل إنشاء جلسة الدفع" });
   }
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 السيرفر يعمل على بورت ${PORT} (CORS Fixed for Production)`));
+app.listen(PORT, () => console.log(`🚀 السيرفر يعمل على بورت ${PORT}`));
 
-//test comment for git
+
