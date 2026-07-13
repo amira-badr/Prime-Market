@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
   // الرابط الجديد الفعلي والمحدث ليتوافق مع الـ CORS والسيكرت كي
- baseURL: 'http://localhost:5000/api',
+ baseURL: 'https://prime-market-srjl.vercel.app/',
   withCredentials: true, 
 });
 
