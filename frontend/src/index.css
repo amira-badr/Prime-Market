@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+@theme {
+  --animate-*: initial;
+}
+@variant dark (&:where(.dark, .dark *));
