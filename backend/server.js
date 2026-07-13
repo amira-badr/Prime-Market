@@ -12,11 +12,19 @@ if (dns.setDefaultResultOrder) {
 const app = express();
 app.use(express.json());
 
-// التعديل هنا: تحديد الـ origin بدقة عشان يشتغل مع withCredentials: true
+// التعديل هنا: تحديد الـ origin برابط موقعك الحقيقي على Vercel
+const allowedOrigin = "https://prime-market-nine.vercel.app";
+
 app.use(cors({
-  origin: "http://localhost:5173", 
+  origin: allowedOrigin, 
   credentials: true, 
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+}));
+
+// معالجة طلبات الـ pre-flight
+app.options('*', cors({
+  origin: allowedOrigin,
+  credentials: true
 }));
 
 // مسار الدفع باستخدام Stripe
@@ -37,13 +45,17 @@ app.post('/api/payment/checkout', async (req, res) => {
       quantity: item.quantity || 1,
     }));
 
+    // تحديد روابط النجاح والإلغاء (يتم الاعتماد على المتغير CLIENT_URL في Vercel)
+    const successUrl = `${process.env.CLIENT_URL || 'https://prime-market-nine.vercel.app'}/success`;
+    const cancelUrl = `${process.env.CLIENT_URL || 'https://prime-market-nine.vercel.app'}/cancel`;
+
     // إنشاء جلسة دفع
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-      success_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/success`,
-      cancel_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/cancel`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
     });
 
     res.status(200).json({ success: true, url: session.url });
@@ -55,4 +67,4 @@ app.post('/api/payment/checkout', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 السيرفر يعمل على بورت ${PORT} (CORS Fixed)`));
+app.listen(PORT, () => console.log(`🚀 السيرفر يعمل على بورت ${PORT} (CORS Fixed for Production)`));
