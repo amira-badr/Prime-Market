@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { Trash2, Plus, Minus, CreditCard, ShoppingBag, Loader2, Smartphone } from 'lucide-react';
-// استدعاء ملف الإعدادات المخصص بتاعك
 import api from '../services/Axios'; 
 
 const Cart = () => {
@@ -14,21 +13,25 @@ const Cart = () => {
       if (method === 'card') setLoadingCard(true);
       if (method === 'wallet') setLoadingWallet(true);
 
-      // تجهيز البيانات بالشكل الذي يتوقعه السيرفر الجديد (Stripe)
       const cartItems = cart.map(item => ({
         name: item.title,
         price: item.price,
         quantity: item.quantity,
       }));
 
-      // نرسل الطلب للسيرفر المحدث لـ Stripe
-      const response = await api.post('/payment/checkout', { 
-        cartItems 
+      // التعديل هنا: استخدام fetch مباشرة عشان نتجاوز مشاكل الـ Axios مع الـ CORS
+      const response = await fetch('https://prime-market-sril.vercel.app/api/payment/checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ cartItems }),
       });
 
-      // إذا رجع رابط الدفع بنجاح من Stripe، بنحول العميل لصفحة الدفع فوراً
-      if (response.data && response.data.url) {
-        window.location.href = response.data.url;
+      const data = await response.json();
+
+      if (data && data.url) {
+        window.location.href = data.url;
       } else {
         alert("فشل في الحصول على رابط الدفع.");
         setLoadingCard(false);
