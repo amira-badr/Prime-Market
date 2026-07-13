@@ -1,13 +1,15 @@
 {
   "version": 2,
-  "rewrites": [
+  "services": [
     {
-      "source": "/api/(.*)",
-      "destination": "/backend/server.js"
+      "name": "frontend",
+      "source": "frontend/**",
+      "directory": "frontend"
     },
     {
-      "source": "/(.*)",
-      "destination": "/frontend/index.html"
+      "name": "backend",
+      "source": "backend/**",
+      "directory": "backend"
     }
   ]
 }
