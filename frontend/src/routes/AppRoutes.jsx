@@ -26,8 +26,6 @@ import VendorDashboard from '../pages/vendor/Dashboard';
 import VendorProducts from '../pages/vendor/Products';
 import VendorOrders from '../pages/vendor/Orders';
 import VendorAddProduct from '../pages/vendor/AddProduct';
-import SuccessPage from '../pages/SuccessPage';
-import CancelPage from '../pages/CancelPage';
 const AppRoutes = () => {
   const { user } = useAuth();
 
@@ -60,9 +58,6 @@ const AppRoutes = () => {
         <Route path="orders" element={<VendorOrders />} />
         <Route path="add-product" element={<VendorAddProduct />} />
       </Route>
-
-      <Route path="/payment/success" element={<SuccessPage />} />
-      <Route path="/payment/cancel" element={<CancelPage />} />
 
       
       <Route path="*" element={<NotFound />} />
