@@ -1,77 +1,58 @@
+require('dotenv').config();
+const dns = require('dns');
 const express = require('express');
 const cors = require('cors');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY); // السيرفر هو اللي بيستخدم المفتاح السري
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+// إجبار النظام على استخدام IPv4 لحل مشاكل الاتصال
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder('ipv4first');
+}
+
 const app = express();
-
-app.use(cors({
-  origin: "https://prime-market-nine.vercel.app", // موقعك الأساسي
-  methods: ["POST", "OPTIONS"],
-  credentials: true
-}));
-
 app.use(express.json());
 
+// التعديل هنا: تحديد الـ origin بدقة عشان يشتغل مع withCredentials: true
+app.use(cors({
+  origin: "http://localhost:5173", 
+  credentials: true, 
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+}));
+
+// مسار الدفع باستخدام Stripe
 app.post('/api/payment/checkout', async (req, res) => {
   try {
     const { cartItems } = req.body;
-    
-    // تحويل السلة لـ Line Items
+    if (!cartItems || cartItems.length === 0) return res.status(400).json({ success: false, message: "السلة فارغة!" });
+
+    // تحويل المنتجات لتنسيق Stripe
     const lineItems = cartItems.map(item => ({
       price_data: {
-        currency: 'egp',
-        product_data: { name: item.title },
-        unit_amount: Math.round(item.price * 100), // Stripe بيحسب بالقرش
+        currency: 'usd', 
+        product_data: {
+          name: item.name,
+        },
+        unit_amount: Math.round(item.price * 100),
       },
-      quantity: item.quantity,
+      quantity: item.quantity || 1,
     }));
 
-    // إنشاء جلسة Stripe
+    // إنشاء جلسة دفع
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-      success_url: 'https://prime-market-nine.vercel.app/success',
-      cancel_url: 'https://prime-market-nine.vercel.app/cart',
+      success_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/success`,
+      cancel_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/cancel`,
     });
 
-    res.json({ url: session.url });
+    res.status(200).json({ success: true, url: session.url });
+
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Stripe Error:", error.message);
+    res.status(500).json({ success: false, error: "فشل إنشاء جلسة الدفع" });
   }
 });
 
-app.listen(5000, () => console.log('Server running on port 5000'));
-```
-
-#### 2. ملف الفرونت إند (`Cart.jsx`)
-استخدمي رابط الباك إند المرفوع على Vercel (مش اللوكال هوست خالص):
-
-```javascript:Frontend:src/pages/Cart.jsx
-// ... (الكود اللي قبل الـ handleCheckout زي ما هو)
-
-const handleCheckout = async () => {
-  try {
-    setLoadingCard(true);
-    
-    // تأكدي من الرابط ده هو رابط الباك إند بتاعك اللي شغال على Vercel
-    const response = await fetch('https://prime-market-sril.vercel.app/api/payment/checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ cartItems: cart }),
-    });
-
-    const data = await response.json();
-
-    if (data.url) {
-      window.location.href = data.url; // هيحولك لصفحة Stripe
-    } else {
-      alert("حدث خطأ في الاتصال بالسيرفر");
-    }
-  } catch (error) {
-    console.error("Error:", error);
-  } finally {
-    setLoadingCard(false);
-  }
-};
-
-
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`🚀 السيرفر يعمل على بورت ${PORT} (CORS Fixed)`));
