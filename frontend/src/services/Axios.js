@@ -1,22 +1,9 @@
 import axios from 'axios';
 
+// رجعناه للبورت 5000 زي ما طلبتي
 const api = axios.create({
-  // الرابط الجديد الفعلي والمحدث ليتوافق مع الـ CORS والسيكرت كي
- baseURL: 'https://prime-market-srjl.vercel.app'
+  baseURL: 'http://localhost:5000', 
   withCredentials: true, 
 });
-
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
 
 export default api;
