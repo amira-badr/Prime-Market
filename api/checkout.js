@@ -1,7 +1,7 @@
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
-module.exports = async (req, res) => {
-  // تفعيل الـ CORS عشان الفرونت إند يكلم الباك إند
+export default async function handler(req, res) {
+  // تفعيل الـ CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -22,12 +22,12 @@ module.exports = async (req, res) => {
         },
         quantity: item.quantity,
       })),
-      success_url: `https://prime-market-nine.vercel.app/success`,
-      cancel_url: `https://prime-market-nine.vercel.app/cart`,
+      success_url: `https://prime-market-git-main-amira-badr1.vercel.app/success`,
+      cancel_url: `https://prime-market-git-main-amira-badr1.vercel.app/cart`,
     });
 
-    res.status(200).json({ url: session.url });
+    return res.status(200).json({ url: session.url });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
-};
+}
