@@ -1,7 +1,13 @@
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 module.exports = async (req, res) => {
-  if (req.method !== 'POST') return res.status(405).json({ message: "Method not allowed" });
+  // تفعيل الـ CORS عشان الفرونت إند يكلم الباك إند
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") return res.status(200).end();
+  if (req.method !== "POST") return res.status(405).json({ message: "Method not allowed" });
 
   try {
     const { cartItems } = req.body;
@@ -11,7 +17,7 @@ module.exports = async (req, res) => {
       line_items: cartItems.map((item) => ({
         price_data: {
           currency: "egp",
-          product_data: { name: item.name },
+          product_data: { name: item.title },
           unit_amount: Math.round(item.price * 100),
         },
         quantity: item.quantity,
