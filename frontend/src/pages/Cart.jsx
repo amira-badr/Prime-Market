@@ -22,11 +22,9 @@ const Cart = () => {
       }));
 
       // التعديل الوحيد هنا: إضافة /api/ لتطابق مسار السيرفر بالضبط
-      const response = await api.post('/api/payment/checkout', { 
-        cartItems 
-      });
-
-      // إذا رجع رابط الدفع بنجاح من Stripe، بنحول العميل لصفحة الدفع فوراً
+    const response = await api.post('/checkout', {
+   cartItems
+  });      // إذا رجع رابط الدفع بنجاح من Stripe، بنحول العميل لصفحة الدفع فوراً
       if (response.data && response.data.url) {
         window.location.href = response.data.url;
       } else {
