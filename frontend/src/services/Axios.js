@@ -1,8 +1,9 @@
 import axios from 'axios';
 
-// ده أهم سطر: بنقوله أي طلب بيبدأ بـ /api يروح للسيرفر اللي جوه الموقع نفسه
+// رجعناه للبورت 5000 زي ما طلبتي
 const api = axios.create({
-  baseURL: '/api', 
+  baseURL: 'http://localhost:5000', 
+  withCredentials: true, 
 });
 
 export default api;
