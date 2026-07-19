@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-// استدعاء الدوال اللي عملناها في الكونترولر
+// استدعاء الدوال اللي  في الكونترولر
 const { getAllProducts, createProduct } = require('../controllers/productController');
 
 // تحديد المسارات

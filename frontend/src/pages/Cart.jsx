@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
-import { Trash2, Plus, Minus, CreditCard, ShoppingBag, Loader2, Smartphone } from 'lucide-react';
-// استدعاء ملف الإعدادات المخصص بتاعك
+import { Trash2, Plus, Minus, CreditCard, ShoppingBag, Loader2 } from 'lucide-react';
 import api from '../services/Axios';
 
 const Cart = () => {
@@ -14,17 +13,16 @@ const Cart = () => {
       if (method === 'card') setLoadingCard(true);
       if (method === 'wallet') setLoadingWallet(true);
 
-      // تجهيز البيانات بالشكل الذي يتوقعه السيرفر الجديد (Stripe)
       const cartItems = cart.map(item => ({
         name: item.title,
         price: item.price,
         quantity: item.quantity,
       }));
 
-      // التعديل الوحيد هنا: إضافة /api/ لتطابق مسار السيرفر بالضبط
-    const response = await api.post('/checkout', {
-   cartItems
-  });      // إذا رجع رابط الدفع بنجاح من Stripe، بنحول العميل لصفحة الدفع فوراً
+      const response = await api.post('/api/payment/checkout', {
+        cartItems
+      });
+
       if (response.data && response.data.url) {
         window.location.href = response.data.url;
       } else {
@@ -44,7 +42,6 @@ const Cart = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* تم التعديل هنا: وضع العنوان داخل تاج HTML */}
       <h1 className="text-3xl font-black mb-8 text-white">سلة المشتريات</h1>
 
       {cart.length === 0 ? (
@@ -54,7 +51,6 @@ const Cart = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* منتجات السلة */}
           <div className="lg:col-span-2 space-y-4">
             {cart.map((item) => (
               <div key={item.id} className="flex items-center gap-4 bg-[#1c164a]/60 backdrop-blur-md p-4 rounded-[1.5rem] border border-white/5">
@@ -63,7 +59,6 @@ const Cart = () => {
                   <h4 className="font-black text-sm line-clamp-1 text-white">{item.title}</h4>
                   <p className="text-cyan-400 font-bold text-xs mt-1">{item.price} EGP</p>
                 </div>
-                {/* عداد كميات المنتجات */}
                 <div className="flex items-center gap-2 bg-[#130d35] px-3 py-1.5 rounded-full border border-white/5">
                   <button onClick={() => updateQuantity(item.id, 1)} className="text-slate-300 hover:text-cyan-400"><Plus size={14} /></button>
                   <span className="font-black text-sm w-4 text-center text-white">{item.quantity}</span>
@@ -74,7 +69,6 @@ const Cart = () => {
             ))}
           </div>
 
-          {/* ملخص الفاتورة النهائي */}
           <div className="bg-[#130d33] border border-white/5 p-6 rounded-[2rem] h-fit sticky top-24">
             <h3 className="font-black text-lg mb-4 border-b border-white/5 pb-2 text-white">ملخص الفاتورة</h3>
             <div className="space-y-3 text-sm">
@@ -85,7 +79,6 @@ const Cart = () => {
               <div className="flex justify-between font-black text-base text-white"><span>الإجمالي النهائي:</span><span className="text-cyan-400">{cartTotal} EGP</span></div>
             </div>
             
-            {/* زر الدفع بالكريديت كارد */}
             <button 
               onClick={() => handleCheckout('card')} 
               disabled={isAnyLoading}

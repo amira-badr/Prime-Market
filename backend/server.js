@@ -8,7 +8,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 app.use(express.json());
 
-// الحل الجذري للـ CORS: حددنا الأصل بتاع الموقع بدل '*'
+
 app.use(cors({
   origin: "http://localhost:5173", 
   methods: ["GET", "POST", "OPTIONS"],
